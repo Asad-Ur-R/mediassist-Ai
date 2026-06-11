@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MediAssist AI — Healthcare Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0B0F1A;--bg2:#111827;--bg3:#1A2236;--bg4:#1F2B40;
+  --teal:#0DCCB1;--teal2:#0AAFA0;--teal-faint:rgba(13,204,177,0.08);
+  --text:#E2EAF8;--text2:#8899BB;--text3:#4A5E7A;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --red:#FF4D6D;--amber:#F59E0B;--green:#10B981;
+  --font:'Inter',sans-serif;--fontd:'Sora',sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font)}
+body{display:flex;flex-direction:column;overflow:hidden}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:60px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;gap:10px}
+.top-logo{display:flex;align-items:center;gap:10px;min-width:0}
+.top-icon{width:34px;height:34px;min-width:34px;background:var(--teal);border-radius:9px;display:flex;align-items:center;justify-content:center}
+.top-icon svg{width:18px;height:18px;stroke:#0B0F1A;stroke-width:2.5;fill:none}
+.top-name{font-family:var(--fontd);font-size:17px;font-weight:700;color:#fff;white-space:nowrap}
+.top-badge{font-size:10px;background:var(--teal-faint);color:var(--teal);border:1px solid rgba(13,204,177,.2);padding:2px 8px;border-radius:20px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;white-space:nowrap}
+.top-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.status-pill{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:5px 11px;font-size:12px}
+.status-dot{width:7px;height:7px;min-width:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.status-pill span{color:var(--green);font-weight:500}
+.newbtn{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--border2);border-radius:8px;padding:6px 12px;color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:.15s}
+.newbtn:hover{background:var(--bg3);color:var(--text)}
+.newbtn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;flex-shrink:0}
+/* hide text on small screens */
+.newbtn .btn-label{display:inline}
+
+/* HAMBURGER */
+.hamburger{display:none;background:transparent;border:1px solid var(--border2);border-radius:8px;padding:7px;cursor:pointer;color:var(--text2)}
+.hamburger svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;display:block}
+
+/* EMERGENCY */
+.emer{display:none;align-items:center;gap:10px;padding:9px 20px;background:rgba(255,77,109,.08);border-bottom:1px solid rgba(255,77,109,.15);font-size:13px;color:#ff8fa3;flex-shrink:0}
+.emer.on{display:flex}
+.emer svg{width:16px;height:16px;stroke:var(--red);stroke-width:2;fill:none;flex-shrink:0}
+.emer strong{color:var(--red)}
+.emer-x{margin-left:auto;cursor:pointer;color:var(--red);font-size:20px;background:none;border:none;font-family:var(--font);flex-shrink:0}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* OVERLAY for mobile */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50}
+.overlay.on{display:block}
+
+/* SIDEBAR */
+.sidebar{width:258px;min-width:258px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:transform .25s ease;z-index:51}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.sb-head{padding:18px 16px 7px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
+.sb-list{padding:4px 10px 12px;display:flex;flex-direction:column;gap:3px}
+.qbtn{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;background:transparent;border:none;border-radius:9px;cursor:pointer;font-size:12.5px;color:var(--text2);line-height:1.5;text-align:left;width:100%;transition:.15s;font-family:var(--font)}
+.qbtn:hover{background:var(--bg3);color:var(--text)}
+.qbtn svg{width:15px;height:15px;stroke:var(--teal);stroke-width:2;fill:none;flex-shrink:0;margin-top:1px}
+.sb-divider{height:1px;background:var(--border);margin:6px 16px}
+.disc-card{margin:12px 10px 16px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:12px 13px}
+.disc-card p{font-size:11.5px;color:var(--text3);line-height:1.7}
+.disc-card strong{color:var(--text2)}
+
+/* CHAT */
+.chat{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.msgs{flex:1;overflow-y:auto;padding:24px 20px;display:flex;flex-direction:column;gap:20px}
+.msgs::-webkit-scrollbar{width:4px}
+.msgs::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* WELCOME */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;text-align:center;padding:30px 16px;min-height:300px}
+.w-ring{width:78px;height:78px;border-radius:50%;border:1.5px solid rgba(13,204,177,.15);display:flex;align-items:center;justify-content:center}
+.w-ico{width:60px;height:60px;background:var(--teal-faint);border:1px solid rgba(13,204,177,.2);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.w-ico svg{width:26px;height:26px;stroke:var(--teal);stroke-width:2;fill:none}
+.welcome h2{font-family:var(--fontd);font-size:22px;font-weight:700;color:#fff}
+.welcome p{font-size:13.5px;color:var(--text2);max-width:340px;line-height:1.8}
+.w-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:480px;margin-top:4px}
+.w-chip{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--text2);cursor:pointer;transition:.15s;font-family:var(--font)}
+.w-chip:hover{background:var(--bg4);border-color:rgba(13,204,177,.25);color:var(--teal)}
+
+/* MESSAGES */
+.msg{display:flex;gap:10px;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse;align-self:flex-end;max-width:85%}
+.msg.ai{max-width:92%}
+.av{width:32px;height:32px;min-width:32px;border-radius:9px;display:flex;align-items:center;justify-content:center}
+.msg.ai .av{background:var(--teal)}
+.msg.ai .av svg{width:16px;height:16px;stroke:#0B0F1A;stroke-width:2.5;fill:none}
+.msg.user .av{background:var(--bg4);color:var(--text2);font-size:11px;font-weight:600;font-family:var(--fontd)}
+.mbody{display:flex;flex-direction:column;gap:4px;min-width:0}
+.msg.user .mbody{align-items:flex-end}
+.bubble{padding:11px 14px;border-radius:14px;font-size:13.5px;line-height:1.75;word-break:break-word}
+.msg.ai .bubble{background:var(--bg2);border:1px solid var(--border2);border-top-left-radius:3px;color:var(--text)}
+.msg.user .bubble{background:var(--bg3);border:1px solid rgba(13,204,177,.15);border-top-right-radius:3px;color:var(--text)}
+.bubble strong{color:var(--teal);font-weight:600}
+.bubble em{color:var(--text2)}
+.bubble ul,.bubble ol{padding-left:17px;margin:5px 0}
+.bubble li{margin:3px 0;color:var(--text2)}
+.bubble h3{font-size:11.5px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:.5px;margin:9px 0 4px;font-family:var(--fontd)}
+.bubble code{background:rgba(13,204,177,.1);color:var(--teal);padding:1px 5px;border-radius:4px;font-size:12px}
+.mmeta{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text3);padding:0 3px}
+.msg.user .mmeta{flex-direction:row-reverse}
+.cpybtn{cursor:pointer;display:flex;align-items:center;gap:3px;padding:2px 6px;border-radius:5px;transition:.15s;font-size:11px;background:none;border:none;color:var(--text3);font-family:var(--font)}
+.cpybtn:hover{color:var(--teal);background:var(--teal-faint)}
+.cpybtn svg{width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none}
+
+/* TYPING */
+.typing{display:flex;gap:10px}
+.tdots{display:flex;align-items:center;gap:5px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;border-top-left-radius:3px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--text3);animation:bop .9s infinite}
+.dot:nth-child(2){animation-delay:.15s}
+.dot:nth-child(3){animation-delay:.3s}
+@keyframes bop{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+/* INPUT */
+.izone{padding:12px 16px 16px;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0}
+.ibox{display:flex;align-items:flex-end;gap:8px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:14px;padding:10px 10px 10px 15px;transition:.2s}
+.ibox:focus-within{border-color:rgba(13,204,177,.4)}
+.itxt{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font);font-size:14px;resize:none;max-height:130px;min-height:22px;line-height:1.6;padding:0}
+.itxt::placeholder{color:var(--text3)}
+.iright{display:flex;align-items:center;gap:5px}
+.ccount{font-size:11px;color:var(--text3)}
+.ccount.hi{color:var(--amber)}
+.sbtn{width:36px;height:36px;min-width:36px;background:var(--teal);border:none;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.18s}
+.sbtn:hover:not(:disabled){background:var(--teal2);transform:scale(1.05)}
+.sbtn:disabled{background:var(--bg4);cursor:not-allowed;opacity:.5}
+.sbtn svg{width:16px;height:16px;stroke:#0B0F1A;stroke-width:2.5;fill:none}
+.ifooter{text-align:center;margin-top:7px;font-size:11px;color:var(--text3)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .top-badge{display:none}
+  .status-pill{display:none}
+  .newbtn .btn-label{display:none}
+  .newbtn{padding:7px 9px}
+  .hamburger{display:flex}
+
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;
+    transform:translateX(-100%);
+    box-shadow:4px 0 24px rgba(0,0,0,.5);
+  }
+  .sidebar.open{transform:translateX(0)}
+
+  .msgs{padding:16px 12px;gap:16px}
+  .msg.user{max-width:90%}
+  .msg.ai{max-width:96%}
+  .welcome{padding:20px 12px}
+  .welcome h2{font-size:20px}
+  .izone{padding:10px 12px 14px}
+}
+
+@media(max-width:400px){
+  .top-name{font-size:15px}
+  .welcome h2{font-size:18px}
+  .welcome p{font-size:13px}
+  .bubble{font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="top-logo">
+    <div class="top-icon">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <span class="top-name">MediAssist AI</span>
+    <span class="top-badge">Demo</span>
+  </div>
+  <div class="top-right">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span>Online</span>
+    </div>
+    <button class="newbtn" onclick="newChat()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span class="btn-label">New Chat</span>
+    </button>
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="emer" id="emer">
+  <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  <span><strong>Emergency detected.</strong> Call <strong>115</strong> or your local emergency number immediately.</span>
+  <button class="emer-x" onclick="document.getElementById('emer').className='emer'">×</button>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sb-head">Quick Questions</div>
+    <div class="sb-list">
+      <button class="qbtn" onclick="sq('What are the common side effects of Ibuprofen?')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6M12 9v6"/></svg>Side effects of Ibuprofen
+      </button>
+      <button class="qbtn" onclick="sq('I have a headache and fever. What could it be?')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Headache & fever causes
+      </button>
+      <button class="qbtn" onclick="sq('What is the difference between antibiotics and antivirals?')">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Antibiotics vs Antivirals
+      </button>
+      <button class="qbtn" onclick="sq('Can I take Paracetamol with blood pressure medication?')">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Drug interaction check
+      </button>
+      <button class="qbtn" onclick="sq('What are the early warning signs of diabetes?')">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Diabetes warning signs
+      </button>
+      <button class="qbtn" onclick="sq('How should I store my medications at home?')">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Medication storage tips
+      </button>
+      <button class="qbtn" onclick="sq('What vitamins should I take daily for good health?')">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Daily vitamins guide
+      </button>
+      <button class="qbtn" onclick="sq('What is the safe dosage of Paracetamol for adults?')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Paracetamol dosage
+      </button>
+      <button class="qbtn" onclick="sq('What foods should I avoid if I have high blood pressure?')">
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Foods & hypertension
+      </button>
+      <button class="qbtn" onclick="sq('How can I boost my immune system naturally?')">
+        <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Boost immune system
+      </button>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="disc-card">
+      <p><strong>⚠ Medical Disclaimer</strong><br/>MediAssist AI provides <strong>general health information only</strong>. Always consult a qualified doctor for diagnosis and treatment.</p>
+    </div>
+  </div>
+
+  <div class="chat">
+    <div class="msgs" id="msgs">
+      <div class="welcome" id="welcome">
+        <div class="w-ring">
+          <div class="w-ico">
+            <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+        </div>
+        <h2>Hello, I'm MediAssist AI</h2>
+        <p>Your intelligent healthcare companion. Ask me about medications, symptoms, drug interactions, or general health guidance.</p>
+        <div class="w-chips">
+          <div class="w-chip" onclick="sq('What are the common side effects of Ibuprofen?')">💊 Ibuprofen side effects</div>
+          <div class="w-chip" onclick="sq('I have a headache and fever. What could it be?')">🤒 Headache & fever</div>
+          <div class="w-chip" onclick="sq('Can I take Paracetamol with blood pressure medication?')">⚠️ Drug interactions</div>
+          <div class="w-chip" onclick="sq('What are the early warning signs of diabetes?')">🩺 Diabetes signs</div>
+          <div class="w-chip" onclick="sq('How can I boost my immune system naturally?')">🛡️ Boost immunity</div>
+          <div class="w-chip" onclick="sq('What vitamins should I take daily for good health?')">🌿 Daily vitamins</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="izone">
+      <div class="ibox">
+        <textarea class="itxt" id="inp" rows="1" maxlength="2000"
+          placeholder="Ask about medications, symptoms, drug interactions…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px';updateCC(this)"></textarea>
+        <div class="iright">
+          <span class="ccount" id="cc"></span>
+          <button class="sbtn" id="sbtn" onclick="send()">
+            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="ifooter">For informational purposes only — always consult a qualified healthcare professional</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PASTE YOUR GROQ API KEY BELOW ───────────────────────────────
+const API_KEY = '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';
+// ─────────────────────────────────────────────────────────────────
+
+const SYS=`You are MediAssist AI, a knowledgeable and empathetic healthcare assistant. Help users with:
+- Medications: names, dosages, side effects, interactions, storage
+- Symptoms: possible causes, severity, when to seek care
+- Medical conditions: overview, management, prevention
+- General health, wellness, and nutrition guidance
+
+Formatting:
+- Use **bold** for medication names, key terms, and warnings
+- Use bullet points for lists and side effects
+- Use ### headings for long structured responses
+- Be concise, warm, and practical
+
+Safety:
+- NEVER definitively diagnose — say "may indicate", "could be", "possible causes include"
+- Always recommend consulting a doctor for serious or persistent symptoms
+- For emergencies urgently direct to emergency services
+- For mental health crisis provide crisis resources immediately`;
+
+let history=[],busy=false;
+const EMKEYS=['chest pain',"can't breathe",'cannot breathe','difficulty breathing','heart attack','stroke','unconscious','overdose','suicide','kill myself','self harm','severe bleeding','seizure','anaphylaxis'];
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('on');
+}
+
+function sq(t){
+  const i=document.getElementById('inp');
+  i.value=t; i.style.height='auto';
+  // close sidebar on mobile after selecting
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('on');
+  send();
+}
+
+function newChat(){
+  history=[];
+  document.getElementById('msgs').innerHTML=`<div class="welcome" id="welcome">
+    <div class="w-ring"><div class="w-ico"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div>
+    <h2>Hello, I'm MediAssist AI</h2>
+    <p>Your intelligent healthcare companion. Ask me about medications, symptoms, drug interactions, or general health guidance.</p>
+    <div class="w-chips">
+      <div class="w-chip" onclick="sq('What are the common side effects of Ibuprofen?')">💊 Ibuprofen side effects</div>
+      <div class="w-chip" onclick="sq('I have a headache and fever. What could it be?')">🤒 Headache & fever</div>
+      <div class="w-chip" onclick="sq('Can I take Paracetamol with blood pressure medication?')">⚠️ Drug interactions</div>
+      <div class="w-chip" onclick="sq('What are the early warning signs of diabetes?')">🩺 Diabetes signs</div>
+      <div class="w-chip" onclick="sq('How can I boost my immune system naturally?')">🛡️ Boost immunity</div>
+      <div class="w-chip" onclick="sq('What vitamins should I take daily for good health?')">🌿 Daily vitamins</div>
+    </div>
+  </div>`;
+  document.getElementById('emer').className='emer';
+}
+
+function updateCC(el){
+  const n=el.value.length,cc=document.getElementById('cc');
+  cc.textContent=n>800?`${n}/2000`:'';
+  cc.className='ccount'+(n>1500?' hi':'');
+}
+
+function checkEmer(t){
+  if(EMKEYS.some(k=>t.toLowerCase().includes(k)))
+    document.getElementById('emer').className='emer on';
+}
+
+function ts(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+
+function md(t){
+  return t
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>\n?)+/g,'<ul>$&</ul>')
+    .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+}
+
+function addMsg(role,text){
+  const w=document.getElementById('welcome');if(w)w.remove();
+  const area=document.getElementById('msgs');
+  const id='m'+Date.now();
+  const d=document.createElement('div');
+  d.className=`msg ${role}`;
+  const av=role==='ai'
+    ?`<div class="av"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>`
+    :`<div class="av">You</div>`;
+  const bub=role==='ai'?md(text):text.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const cpy=role==='ai'?`<button class="cpybtn" onclick="cpy('${id}')"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>`:'';
+  d.innerHTML=`${av}<div class="mbody"><div class="bubble" id="${id}">${bub}</div><div class="mmeta"><span>${ts()}</span>${cpy}</div></div>`;
+  area.appendChild(d);
+  area.scrollTop=area.scrollHeight;
+}
+
+function addTyping(){
+  const area=document.getElementById('msgs');
+  const d=document.createElement('div');
+  d.className='typing';d.id='typ';
+  d.innerHTML=`<div class="av" style="background:var(--teal)"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#0B0F1A;stroke-width:2.5;fill:none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="tdots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  area.appendChild(d);area.scrollTop=area.scrollHeight;
+}
+function rmTyping(){const t=document.getElementById('typ');if(t)t.remove()}
+
+function cpy(id){
+  const el=document.getElementById(id);if(!el)return;
+  navigator.clipboard.writeText(el.innerText).then(()=>{
+    const b=el.closest('.mbody').querySelector('.cpybtn');
+    if(b){b.innerHTML='<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none"><polyline points="20 6 9 17 4 12"/></svg>Copied';
+    setTimeout(()=>{b.innerHTML='<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;stroke-width:2;fill:none"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy'},1600)}
+  });
+}
+
+async function send(){
+  if(busy)return;
+  const inp=document.getElementById('inp');
+  const text=inp.value.trim();
+  if(!text)return;
+  checkEmer(text);
+  busy=true;
+  document.getElementById('sbtn').disabled=true;
+  inp.value='';inp.style.height='auto';
+  document.getElementById('cc').textContent='';
+  addMsg('user',text);
+  history.push({role:'user',content:text});
+  addTyping();
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${API_KEY}`},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:SYS},...history],max_tokens:1024,temperature:0.65})
+    });
+    const data=await res.json();
+    rmTyping();
+    if(!res.ok){addMsg('ai',`**Error:** ${data.error?.message||'Something went wrong.'}`);history.pop();}
+    else{const r=data.choices?.[0]?.message?.content||'No response generated.';addMsg('ai',r);history.push({role:'assistant',content:r});}
+  }catch(e){rmTyping();addMsg('ai',`**Error:** ${e.message}`);history.pop();}
+  busy=false;
+  document.getElementById('sbtn').disabled=false;
+  inp.focus();
+}
+</script>
+</body>
+</html>
